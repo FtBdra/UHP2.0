@@ -1,0 +1,32 @@
+{
+  "model_type": "TF-IDF + Logistic Regression",
+  "label2id": {
+    "negatif": 0,
+    "netral": 1,
+    "positif": 2
+  },
+  "id2label": {
+    "0": "negatif",
+    "1": "netral",
+    "2": "positif"
+  },
+  "label_to_score": {
+    "negatif": -0.35,
+    "netral": 0.0,
+    "positif": 0.55
+  },
+  "max_features": 5000,
+  "ngram_range": [
+    1,
+    2
+  ],
+  "accuracy": 1.0,
+  "f1_weighted": 1.0,
+  "train_size": 1600,
+  "test_size": 400,
+  "input_name": "string_input",
+  "output_names": [
+    "label",
+    "probabilities"
+  ]
+}
