@@ -4,50 +4,96 @@
    ============================================= */
 
 'use strict';
+// Diurutkan berdasarkan panjang kata (Longest to Shortest) 
+// untuk mencegah overlapping (misal: "pengiriman cepat" diproses sebelum "cepat")
+const sortByLength = (arr) => arr.sort((a, b) => b.length - a.length);
 
-// ─── Indonesian Sentiment Lexicon ────────────────────────────
-const POSITIVE_WORDS = [
-  'lancar','bagus','baik','ramah','cepat','tepat','senang','puas','luar biasa',
+const STRONG_POSITIVE = sortByLength(['sangat bagus','sangat puas','luar biasa','perfect','excellent','sempurna','terbaik']);
+const STRONG_NEGATIVE = sortByLength(['sangat buruk','sangat kecewa','sangat lambat','sangat bermasalah','terburuk','parah']);
+const POSITIVE_WORDS = sortByLength([
+  'lancar','bagus','baik','ramah','cepat','tepat','senang','puas',
   'konsisten','terjaga','mudah','responsif','komunikatif','repeat order','selalu',
-  'terbaik','mantap','oke','cocok','suka','mau lagi','recommended','rekomendasi',
-  'kualitas','sesuai','memuaskan','excellent','great','good','fast','nice',
+  'mantap','oke','cocok','suka','mau lagi','recommended','rekomendasi',
+  'kualitas','sesuai','memuaskan','great','good','fast','nice',
   'pengiriman cepat','admin komunikatif','proses checkout tidak ribet','mudah dipakai',
   'pemesanan mudah','pelayanan cepat','pesanan selalu tepat','seimbang'
-];
-
-const NEGATIVE_WORDS = [
+]);
+const NEGATIVE_WORDS = sortByLength([
   'lambat','buruk','jelek','kecewa','kurang','telat','terlambat','bermasalah',
-  'tidak puas','tidak baik','naik harga','mahal','sering kosong','stok kosong',
-  'lama','mengecewakan','menurun','rugi','susah','tidak responsif','tidak ada',
-  'ribet','gagal','batal','tidak sesuai','protes','banyak masalah','kualitas buruk',
+  'naik harga','mahal','sering kosong','stok kosong','lama','mengecewakan',
+  'menurun','rugi','susah','tidak responsif','tidak ada','ribet','gagal',
+  'batal','tidak sesuai','protes','banyak masalah','kualitas buruk',
   'tidak konsisten','respons lambat','keterlambatan','komplain','tidak ramah',
   'harga naik','layanan tidak membaik','kosong','proses bermasalah',
   'tidak oke','kurang memuaskan','tidak tepat','sering terlambat'
-];
+]);
 
-const STRONG_POSITIVE = ['sangat bagus','sangat puas','luar biasa','perfect','excellent','sempurna','terbaik'];
-const STRONG_NEGATIVE = ['sangat buruk','sangat kecewa','sangat lambat','sangat bermasalah','terburuk','parah'];
+// Kata-kata yang membalikkan makna (Negation)
+const NEGATION_WORDS = ['tidak', 'tdk', 'kurang', 'krg', 'bukan', 'jangan', 'gak', 'ga', 'belum'];
 
-// ─── Sentiment Engine ────────────────────────────────────────
+// ─── Sentiment Engine 
 function computeSentiment(text) {
-  if (!text || text.trim() === '') return 0;
-  const lower = text.toLowerCase();
+  if (!text || typeof text !== 'string' || text.trim() === '') return 0;
+  
+  // Menghapus tanda baca berlebih, ubah ke lowercase
+  let processedText = text.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, " ");
   let score = 0;
+  let matchedTokens = []; // Untuk kebutuhan debugging
 
-  STRONG_POSITIVE.forEach(w => { if (lower.includes(w)) score += 0.65; });
-  STRONG_NEGATIVE.forEach(w => { if (lower.includes(w)) score -= 0.65; });
-  POSITIVE_WORDS.forEach(w => { if (lower.includes(w)) score += 0.25; });
-  NEGATIVE_WORDS.forEach(w => { if (lower.includes(w)) score -= 0.25; });
+  // Helper untuk mencari dan mengganti kata agar tidak dihitung ganda (Masking)
+  const matchAndMask = (wordList, weight, type) => {
+    wordList.forEach(word => {
+      // Menggunakan \b (word boundary) agar "lama" tidak match di "selama"
+      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      if (regex.test(processedText)) {
+        // Hitung berapa kali kata tersebut muncul
+        const matchCount = processedText.match(regex).length;
+        score += (weight * matchCount);
+        for(let i=0; i<matchCount; i++) matchedTokens.push(`${type}[${word}]`);
+        
+        // Ganti kata yang sudah dihitung dengan string kosong/placeholder
+        processedText = processedText.replace(regex, ' [MATCHED] ');
+      }
+    });
+  };
 
-  return Math.max(-1, Math.min(1, score));
+  // Handle Negasi sebelum mencari kata positif/negatif murni
+  // Contoh: "tidak bagus", "kurang ramah"
+  NEGATION_WORDS.forEach(neg => {
+    POSITIVE_WORDS.forEach(pos => {
+      const negRegex = new RegExp(`\\b${neg}\\s+${pos}\\b`, 'gi');
+      if (negRegex.test(processedText)) {
+        const count = processedText.match(negRegex).length;
+        score -= (0.25 * count); // Dibalik menjadi negatif
+        for(let i=0; i<count; i++) matchedTokens.push(`NEG_FLIP[${neg} ${pos}]`);
+        processedText = processedText.replace(negRegex, ' [MATCHED_NEG] ');
+      }
+    });
+  });
+
+  // Proses ekstraksi berurutan (dari yang berbobot/terpanjang ke terpendek)
+  matchAndMask(STRONG_POSITIVE, 0.65, 'SP');
+  matchAndMask(STRONG_NEGATIVE, -0.65, 'SN');
+  matchAndMask(POSITIVE_WORDS, 0.25, 'P');
+  matchAndMask(NEGATIVE_WORDS, -0.25, 'N');
+
+  // Normalisasi skor akhir (maksimal 1.0, minimal -1.0)
+  const finalScore = Math.max(-1, Math.min(1, score));
+  
+  // Return object
+  return {
+    score: Number(finalScore.toFixed(2)), // Pembulatan 2 desimal
+    label: sentimentLabel(finalScore),
+    matches: matchedTokens // Untuk reporting testing
+  };
 }
 
 function sentimentLabel(score) {
   if (score >= 0.5) return 'Sangat Positif';
   if (score >= 0.2) return 'Positif';
-  if (score >= -0.15) return 'Netral';
-  if (score >= -0.4) return 'Negatif';
-  return 'Sangat Negatif';
+  if (score > -0.2 && score < 0.2) return 'Netral';
+  if (score <= -0.5) return 'Sangat Negatif';
+  return 'Negatif';
 }
 
 // ─── Prediction Engine ───────────────────────────────────────
