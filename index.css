@@ -326,6 +326,34 @@ body {
   border-radius: 10px;
 }
 
+.slider-value-input {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-brand);
+  background: var(--accent-brand-dim);
+  padding: 2px 4px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  width: 40px;
+  text-align: center;
+  outline: none;
+  font-family: var(--font);
+  transition: var(--transition);
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.slider-value-input::-webkit-inner-spin-button,
+.slider-value-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.slider-value-input:focus {
+  border-color: var(--accent-brand);
+  background: var(--bg-elevated);
+}
+
 .slider-range {
   display: flex;
   justify-content: space-between;

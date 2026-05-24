@@ -1,6 +1,6 @@
 import csv, json, os
 
-csv_path = r'UMKM-data/synthetic_umkm_data.csv'
+csv_path = r'UMKM-data/synthetic_umkm_data_new_labels.csv'
 out_path = r'UMKM-data/umkm_preview.json'
 
 stats = {'total': 0, 'Elite': 0, 'Growth': 0, 'Struggling': 0, 'Critical': 0}

@@ -55,7 +55,7 @@ uhp-apps/
 │       └── chat.js       ← Serverless API proxy (Gemini)
 ├── netlify.toml          ← Konfigurasi Netlify
 └── UMKM-data/            ← Dataset UMKM
-    ├── synthetic_umkm_data.csv
+    ├── synthetic_umkm_data_new_labels.csv
     └── umkm_preview.json
 ```
 

@@ -11,6 +11,11 @@
   <link rel="stylesheet" href="css/shared.css" />
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/chatbot.css" />
+  <!-- Libraries untuk parsing CSV dan XLSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+  <!-- ONNX Runtime Web untuk client-side ML inference -->
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
 </head>
 <body>
   <!-- Demo Banner -->
@@ -68,17 +73,15 @@
           </div>
           <div class="form-group">
             <label class="form-label" for="inputRevenue">Pendapatan Bulanan (IDR)</label>
-            <div class="input-wrapper currency">
-              <span class="input-prefix">Rp</span>
-              <input type="number" id="inputRevenue" class="form-input" placeholder="10.000.000" min="0" step="100000" value="8000000" />
-            </div>
+            <div class="input-wrapper currency"><span class="input-prefix">Rp</span>
+              <input type="number" id="inputRevenue" class="form-input" placeholder="10.000.000" min="0" step="100000" value="8000000" /></div>
+            <div class="input-helper-text" id="revenueHelper" style="font-size: 11px; color: var(--text-muted); margin-top: 4px; padding-left: 4px;">Tampilan: Rp 8.0 Jt</div>
           </div>
           <div class="form-group">
             <label class="form-label" for="inputExpenses">Biaya Operasional (IDR)</label>
-            <div class="input-wrapper currency">
-              <span class="input-prefix">Rp</span>
-              <input type="number" id="inputExpenses" class="form-input" placeholder="6.000.000" min="0" step="100000" value="7200000" />
-            </div>
+            <div class="input-wrapper currency"><span class="input-prefix">Rp</span>
+              <input type="number" id="inputExpenses" class="form-input" placeholder="6.000.000" min="0" step="100000" value="7200000" /></div>
+            <div class="input-helper-text" id="expensesHelper" style="font-size: 11px; color: var(--text-muted); margin-top: 4px; padding-left: 4px;">Tampilan: Rp 7.2 Jt</div>
           </div>
         </div>
 
@@ -90,7 +93,7 @@
           <div class="form-group">
             <label class="form-label" for="inputTransactions">
               Jumlah Transaksi / Bulan
-              <span class="slider-value" id="transactionVal">120</span>
+              <input type="number" class="slider-value-input" id="transactionVal" value="120" min="10" max="300" step="5" oninput="updateSliderFromInput('transaction', false)" onchange="updateSliderFromInput('transaction', true)" onkeydown="if(event.key === 'Enter') this.blur()" />
             </label>
             <input type="range" id="inputTransactions" class="form-slider" min="10" max="300" step="5" value="120" oninput="updateSlider('transaction')" />
             <div class="slider-range"><span>10</span><span>300</span></div>
@@ -98,7 +101,7 @@
           <div class="form-group">
             <label class="form-label" for="inputTenure">
               Durasi Usaha (Bulan)
-              <span class="slider-value" id="tenureVal">36</span>
+              <input type="number" class="slider-value-input" id="tenureVal" value="36" min="1" max="200" step="1" oninput="updateSliderFromInput('tenure', false)" onchange="updateSliderFromInput('tenure', true)" onkeydown="if(event.key === 'Enter') this.blur()" />
             </label>
             <input type="range" id="inputTenure" class="form-slider" min="1" max="200" step="1" value="36" oninput="updateSlider('tenure')" />
             <div class="slider-range"><span>1 bln</span><span>200 bln</span></div>
@@ -153,8 +156,8 @@
                 <span class="metric-label">Sentiment Score</span>
                 <span class="metric-value" id="metricSentiment">0.00</span>
                 <span class="metric-sub" id="metricSentimentLabel">Netral</span>
+                <div class="sentiment-gauge-mini" id="sentimentGauge"></div>
               </div>
-              <div class="sentiment-gauge-mini" id="sentimentGauge"></div>
             </div>
             <div class="metric-card" id="cardBurnRate">
               <div class="metric-icon burn-icon">
@@ -164,8 +167,8 @@
                 <span class="metric-label">Burn Rate Ratio</span>
                 <span class="metric-value" id="metricBurnRate">0.00</span>
                 <span class="metric-sub" id="metricBurnLabel">—</span>
+                <div class="metric-bar-mini"><div class="metric-bar-fill" id="burnRateBar"></div></div>
               </div>
-              <div class="metric-bar-mini"><div class="metric-bar-fill" id="burnRateBar"></div></div>
             </div>
           </div>
 
@@ -201,10 +204,10 @@
             <div class="chart-card">
               <div class="card-header">
                 <div class="card-title">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                  Feature Importance
-                </div>
-                <span class="card-subtitle">Faktor dominan prediksi</span>
+                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                 Faktor Kesehatan Bisnis
+               </div>
+               <span class="card-subtitle">Faktor paling berpengaruh pada status kesehatan bisnis Anda</span>
               </div>
               <div class="chart-body" id="featureChart"></div>
             </div>
@@ -212,7 +215,7 @@
               <div class="card-header">
                 <div class="card-title">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  Insight & Rekomendasi
+                  Insight & Strategi Bisnis
                 </div>
               </div>
               <div class="insight-body">
@@ -319,6 +322,7 @@
 
   <script src="js/data.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/ml_engine.js"></script>
   <script src="js/engine.js"></script>
   <script src="js/chatbot.js"></script>
   <script src="js/dashboard.js"></script>

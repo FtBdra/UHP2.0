@@ -52,8 +52,7 @@
       </form>
 
       <div class="login-footer">
-        <p class="no-account">Belum punya akun? <a href="register.html">Daftar di sini</a></p>
-        <a href="index.html" class="back-link">← Kembali ke Beranda</a>
+        <a href="index.html">← Kembali ke Beranda</a>
       </div>
 
       <div class="login-hint">
@@ -81,21 +80,6 @@
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
 
-      // Validasi client-side
-      if (!email || email.length === 0) {
-        errEl.innerHTML = '❌ Email tidak boleh kosong.';
-        errEl.classList.add('show');
-        btn.classList.remove('loading');
-        return;
-      }
-
-      if (!password || password.length === 0) {
-        errEl.innerHTML = '❌ Password tidak boleh kosong.';
-        errEl.classList.add('show');
-        btn.classList.remove('loading');
-        return;
-      }
-
       // Small delay for UX
       await new Promise(r => setTimeout(r, 600));
 
@@ -104,7 +88,7 @@
       if (result.success) {
         window.location.href = 'dashboard.html';
       } else {
-        errEl.innerHTML = result.error || '❌ Terjadi kesalahan. Coba lagi.';
+        errEl.textContent = result.error;
         errEl.classList.add('show');
         btn.classList.remove('loading');
       }
