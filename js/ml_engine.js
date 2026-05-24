@@ -179,7 +179,10 @@ const MLEngine = {
     if (!this.sentimentModel) {
       console.log('[ML Engine] Fallback rule-based (sentiment_model.json belum ready).');
       let total = 0;
-      texts.forEach(t => { total += computeSentiment(t); });
+      texts.forEach(t => {
+        const res = computeSentiment(t);
+        total += (typeof res === 'object' ? res.score : res);
+      });
       return texts.length > 0 ? (total / texts.length) : 0;
     }
 
