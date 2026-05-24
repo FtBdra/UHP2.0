@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daftar | UHP — UMKM Health Predictor</title>
+  <meta name="description" content="Buat akun baru untuk menggunakan UHP dan pantau kesehatan bisnis UMKM Anda." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/shared.css" />
+  <link rel="stylesheet" href="css/login.css" />
+  <link rel="stylesheet" href="css/register.css" />
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-bg"></div>
+    <div class="login-bg-grid"></div>
+
+    <div class="login-card register-card">
+      <div class="login-brand">
+        <div class="login-brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <div class="login-brand-text">
+          <span class="login-brand-name">UHP</span>
+          <span class="login-brand-sub">UMKM Health Predictor</span>
+        </div>
+      </div>
+
+      <h1 class="login-title">Daftar Akun</h1>
+      <p class="login-subtitle">Mulai pantau kesehatan bisnis Anda hari ini</p>
+
+      <form class="login-form register-form" id="registerForm" onsubmit="handleRegister(event)">
+        <!-- Personal Info -->
+        <div class="register-section">
+          <div class="register-section-title">Informasi Pribadi</div>
+          
+          <div class="login-field">
+            <label class="login-label" for="regName">Nama Lengkap</label>
+            <input type="text" class="login-input" id="regName" placeholder="Contoh: Andi Wijaya" required autocomplete="name" />
+          </div>
+
+          <div class="login-field">
+            <label class="login-label" for="regEmail">Email</label>
+            <input type="email" class="login-input" id="regEmail" placeholder="contoh: andi@email.com" required autocomplete="email" />
+          </div>
+
+          <div class="login-field">
+            <label class="login-label" for="regPassword">Password</label>
+            <div class="password-input-wrapper">
+              <input type="password" class="login-input" id="regPassword" placeholder="Min. 6 karakter" required autocomplete="new-password" />
+              <button type="button" class="toggle-password" id="togglePassword">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="login-field">
+            <label class="login-label" for="regPasswordConfirm">Konfirmasi Password</label>
+            <div class="password-input-wrapper">
+              <input type="password" class="login-input" id="regPasswordConfirm" placeholder="Ulangi password" required autocomplete="new-password" />
+              <button type="button" class="toggle-password" id="togglePasswordConfirm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- UMKM Info -->
+        <div class="register-section">
+          <div class="register-section-title">Informasi UMKM</div>
+          
+          <div class="login-field">
+            <label class="login-label" for="regUMKMName">Nama UMKM / Bisnis</label>
+            <input type="text" class="login-input" id="regUMKMName" placeholder="Contoh: Warung Makan Pak Andi" required />
+          </div>
+
+          <div class="login-field">
+            <label class="login-label" for="regSector">Sektor Bisnis</label>
+            <select class="login-input" id="regSector" required>
+              <option value="">Pilih sektor bisnis...</option>
+              <option value="Kuliner">Kuliner / F&B</option>
+              <option value="Teknologi">Teknologi</option>
+              <option value="Kecantikan">Kecantikan</option>
+              <option value="Kerajinan">Kerajinan Tangan</option>
+              <option value="Fashion">Fashion / Pakaian</option>
+              <option value="Pertanian">Pertanian / Agrikultur</option>
+              <option value="Elektronik">Elektronik</option>
+              <option value="Jasa">Jasa / Konsultasi</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="login-error" id="registerError"></div>
+
+        <button type="submit" class="login-btn" id="registerBtn">
+          <span>Daftar Akun</span>
+          <div class="btn-loader"><div class="login-spinner"></div></div>
+        </button>
+      </form>
+
+      <div class="register-footer">
+        <p class="already-account">Sudah punya akun? <a href="login.html">Masuk di sini</a></p>
+        <a href="index.html" class="back-link">← Kembali ke Beranda</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Redirect if already logged in
+    redirectIfLoggedIn();
+
+    // Toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('regPassword');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    });
+
+    document.getElementById('togglePasswordConfirm').addEventListener('click', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('regPasswordConfirm');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    });
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const btn = document.getElementById('registerBtn');
+      const errEl = document.getElementById('registerError');
+
+      btn.classList.add('loading');
+      errEl.classList.remove('show');
+
+      const name = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+      const umkmName = document.getElementById('regUMKMName').value.trim();
+      const sector = document.getElementById('regSector').value;
+
+      // ─── Client-side validation ─────────────────────────────────────
+      
+      // Validasi nama kosong
+      if (!name || name.length === 0) {
+        errEl.textContent = '❌ Nama lengkap tidak boleh kosong.';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Validasi nama minimal 3 karakter
+      if (name.length < 3) {
+        errEl.textContent = '❌ Nama minimal 3 karakter.';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Validasi nama hanya boleh huruf, angka, spasi, dan dash
+      const nameRegex = /^[a-zA-Z0-9\s\-]+$/;
+      if (!nameRegex.test(name)) {
+        errEl.textContent = '❌ Nama tidak boleh mengandung simbol. Hanya huruf, angka, spasi, dan dash (-).';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Validasi nama maksimal 50 karakter
+      if (name.length > 50) {
+        errEl.textContent = '❌ Nama maksimal 50 karakter.';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Validasi email kosong
+      if (!email || email.length === 0) {
+        errEl.textContent = '❌ Email tidak boleh kosong.';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Validasi format email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        errEl.textContent = '❌ Format email tidak valid (contoh: nama@domain.com).';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Validasi password kosong
+      if (!password || password.length === 0) {
+        errEl.textContent = '❌ Password tidak boleh kosong.';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Validasi password minimal 6 karakter
+      if (password.length < 6) {
+        errEl.textContent = '❌ Password minimal 6 karakter.';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Validasi password maksimal 100 karakter
+      if (password.length > 100) {
+        errEl.textContent = '❌ Password maksimal 100 karakter.';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Validasi konfirmasi password kosong
+      if (!passwordConfirm || passwordConfirm.length === 0) {
+        errEl.textContent = '❌ Konfirmasi password tidak boleh kosong.';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Validasi password match
+      if (password !== passwordConfirm) {
+        errEl.textContent = '❌ Password tidak cocok. Pastikan kedua password sama.';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Validasi nama UMKM kosong
+      if (!umkmName || umkmName.length === 0) {
+        errEl.textContent = '❌ Nama UMKM/Bisnis tidak boleh kosong.';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Validasi nama UMKM minimal 3 karakter
+      if (umkmName.length < 3) {
+        errEl.textContent = '❌ Nama UMKM/Bisnis minimal 3 karakter.';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Validasi nama UMKM maksimal 100 karakter
+      if (umkmName.length > 100) {
+        errEl.textContent = '❌ Nama UMKM/Bisnis maksimal 100 karakter.';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Validasi sektor bisnis kosong
+      if (!sector || sector.length === 0) {
+        errEl.textContent = '❌ Pilih sektor bisnis.';
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+        return;
+      }
+
+      // Small delay for UX
+      await new Promise(r => setTimeout(r, 800));
+
+      // ─── Call registration function ─────────────────────────────────
+      const result = await uhpRegister(email, password, name, umkmName, sector);
+
+      if (result.success) {
+        // Redirect ke dashboard
+        window.location.href = 'dashboard.html';
+      } else {
+        // Display error from server/backend
+        errEl.textContent = result.error;
+        errEl.classList.add('show');
+        btn.classList.remove('loading');
+      }
+    }
+  </script>
+</body>
+</html>
