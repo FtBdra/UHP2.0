@@ -188,6 +188,10 @@
   margin-top: 24px;
   font-size: 12px;
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 .login-footer a {
   color: var(--accent-brand);
@@ -195,6 +199,9 @@
   transition: var(--transition);
 }
 .login-footer a:hover { color: var(--growth); }
+.login-divider {
+  color: var(--border-subtle);
+}
 
 /* Credential Hint */
 .login-hint {
