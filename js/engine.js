@@ -1,7 +1,11 @@
 'use strict';
-const AMPLIFIER_WORDS = ['sangat', 'sekali', 'banget', 'super', 'paling', 'luar biasa', 'terlalu', 'ekstra'];
+
+// ─── KAMUS SENTIMEN UHP v2.1 ───────────────────────────────────────────
+// Pisahkan kata penguat (Amplifiers) agar lebih dinamis
+const AMPLIFIER_WORDS = ['sangat', 'sekali', 'banget', 'super', 'paling', 'luarbiasa', 'terlalu', 'ekstra'];
 const NEGATION_WORDS = ['tidak', 'tdk', 'kurang', 'krg', 'bukan', 'jangan', 'gak', 'ga', 'belum'];
 
+// HAPUS kata benda netral (kualitas, pelayanan, pengiriman, admin, produk) dari sini
 const POSITIVE_WORDS = [
   // Kualitas & Kondisi
   'bagus', 'baik', 'mantap', 'oke', 'keren', 'prima', 'asli', 'terbaik', 'sempurna',
@@ -13,6 +17,7 @@ const POSITIVE_WORDS = [
   'suka', 'recommended', 'rekomendasi', 'sesuai', 'memuaskan', 'kilat'
 ];
 
+// Tambahkan kata-kata dari dataset negatif yang sering muncul
 const NEGATIVE_WORDS = [
   // Kualitas & Kondisi
   'buruk', 'jelek', 'cacat', 'rusak', 'hancur', 'lecet', 'robek', 'basah', 'tipis',
@@ -45,7 +50,7 @@ function computeSentiment(text) {
   const negations = sortByLength([...NEGATION_WORDS]);
   const amplifiers = sortByLength([...AMPLIFIER_WORDS]);
 
-  // Helper Engine dengan tambahan dukungan akhiran bahasa indonesia
+  // Helper Engine dengan tambahan dukungan akhiran bahasa indonesia (-nya)
   const applyRule = (regex, weight, labelType) => {
     if (regex.test(processedText)) {
       const count = processedText.match(regex).length;
@@ -56,9 +61,10 @@ function computeSentiment(text) {
     }
   };
 
+  // RULE 1: Negasi + Kata Sentimen (Contoh: "tidak bagus", "kurang cepat")
   negations.forEach(neg => {
     posWords.forEach(pos => {
-      // menangkap kata berafiks seperti "bagusnya", "cepatnya"
+      // (?:nya)? menangkap kata berafiks seperti "bagusnya", "cepatnya"
       applyRule(new RegExp(`\\b${neg}\\s+${pos}(?:nya)?\\b`, 'gi'), -0.45, `NEG_FLIP[${neg} ${pos}]`);
     });
     negWords.forEach(negW => {
@@ -67,6 +73,7 @@ function computeSentiment(text) {
     });
   });
 
+  // RULE 2: Kata Penguat + Kata Sentimen (Contoh: "sangat bagus", "jelek sekali")
   amplifiers.forEach(amp => {
     posWords.forEach(pos => {
       applyRule(new RegExp(`\\b${amp}\\s+${pos}(?:nya)?\\b`, 'gi'), 0.65, `STRONG_POS[${amp} ${pos}]`);
@@ -78,6 +85,7 @@ function computeSentiment(text) {
     });
   });
 
+  // RULE 3: Kata Sentimen Dasar (Yang belum ditangkap oleh Negasi / Penguat)
   posWords.forEach(pos => {
     applyRule(new RegExp(`\\b${pos}(?:nya)?\\b`, 'gi'), 0.25, `POS[${pos}]`);
   });
@@ -85,6 +93,7 @@ function computeSentiment(text) {
     applyRule(new RegExp(`\\b${negW}(?:nya)?\\b`, 'gi'), -0.25, `NEG[${negW}]`);
   });
 
+  // RULE 4: Penalti khusus untuk kata "kurang" yang berdiri sendiri (seringkali bermakna negatif)
   applyRule(/\bkurang\b/gi, -0.20, `NEG[kurang]`);
 
   // Normalisasi skor akhir
