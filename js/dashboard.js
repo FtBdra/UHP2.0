@@ -41,8 +41,13 @@ async function updateSentimentPreview() {
 
   preview.textContent = "..."; // Loading state
   
-  // Gunakan ML Engine (Asynchronous)
-  const score = await MLEngine.predictSentimentBatch(texts);
+  // Mem-bypass MLEngine.predictSentimentBatch yang memiliki bug pembagian/dilusi skor
+  let totalScore = 0;
+  texts.forEach(text => {
+    totalScore += computeSentiment(text).score;
+  });
+  
+  const score = texts.length > 0 ? (totalScore / texts.length) : 0;
 
   const pos = ((score + 1) / 2) * 90 + 5;
   meter.style.width = pos + '%';
