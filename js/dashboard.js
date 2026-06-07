@@ -588,8 +588,13 @@ async function analyzeUMKM() {
 
   try {
     // 1. Ekstraksi Sentimen menggunakan IndoBERT (via ML Engine)
-    const sentimentScore = await MLEngine.predictSentimentBatch(texts);
-    
+    let totalScore = 0;
+    texts.forEach(text => {
+      totalScore += computeSentiment(text).score;
+    });
+    // Jika tidak ada teks, default 0. Jika ada, hitung rata-rata
+    const sentimentScore = texts.length > 0 ? (totalScore / texts.length) : 0;
+     
     // 2. Klasifikasi Menggunakan Tabular Model (via ML Engine)
     const { predictedClass, confidence, npm, burnRate, netProfit } = await MLEngine.predictUMKMClass(
       revenue, expenses, transactions, tenure, sentimentScore, repeatOrderRate
